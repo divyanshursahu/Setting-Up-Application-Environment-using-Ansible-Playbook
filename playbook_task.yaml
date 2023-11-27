@@ -1,0 +1,55 @@
+---
+- hosts: localhost
+  tasks:
+
+    - name: Create Application Configuration Directory
+      ansible.builtin.file:
+         path: /home/labsuser/code/app-data
+         state: directory
+
+    - name: Create System Information File for RedHat
+      ansible.builtin.file:
+         path: /home/labsuser/code/app-data/redhat.txt
+         state: touch
+      when: ansible_os_family == "RedHat"
+      register: redhat
+
+    - name: Create File Based on Debian OS
+      file:
+         path: /home/labsuser/code/app-data/debian.txt
+         state: touch
+      when: ansible_os_family == "Debian"
+      register: debian
+
+    - name: Add Kernel Version to App System File for Debian
+      ansible.builtin.lineinfile:
+        path: /home/labsuser/code/app-data/debian.txt
+        line: Kernel Version of  Debian is  "{{ ansible_kernel }}"
+      when: redhat is skipped
+
+    - name: Add Kernel Version to App System File RedHat
+      ansible.builtin.lineinfile:
+        path: /home/labsuser/code/app-data/debian.txt
+        line: Kernel Version of RedHat is "{{ ansible_kernel }}"
+      when: debian is skipped
+
+    - name: Download demo.cpp
+      get_url:
+        url: https://raw.githubusercontent.com/demokplabsuser/demorepo/main/demo.cpp
+        dest: /home/labsuser/code/app-data/demo.cpp
+
+    - name: Compile Application
+      ansible.builtin.command: g++ demo.cpp -o democode
+      args:
+        chdir: /home/labsuser/code/app-data/
+
+    - name: Run the Application
+      ansible.builtin.command: ./democode
+      args:
+        chdir: /home/labsuser/code/app-data/
+      register: command_output
+
+    - name: Store Application Output to File
+      ansible.builtin.copy:
+          content: "{{ command_output.stdout_lines }}"
+          dest: /home/labsuser/code/app-data/app-output.txt
