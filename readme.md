@@ -18,7 +18,7 @@
 
 10. https://docs.ansible.com/ansible/latest/network/getting_started/first_playbook.html
 
-
+11. https://maker.pro/linux/tutorial/basic-linux-commands-for-beginners
 
 # Steps for exercise:
 
